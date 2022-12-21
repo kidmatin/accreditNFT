@@ -1,0 +1,68 @@
+<?php
+/*
+Plugin Name: Tezos Payments for WooCommerce
+Description: Allows Tezos payments to be made using WooCommerce.
+Version: 1.0
+Author: [Your Name]
+*/
+
+function tezos_gateway_init() {
+  // Check if WooCommerce is active
+  if ( ! class_exists( 'WC_Payment_Gateway' ) ) {
+    return;
+  }
+  
+  // Define the Tezos payment gateway class
+  class WC_Gateway_Tezos extends WC_Payment_Gateway {
+    // Constructor
+    public function __construct() {
+      $this->id = 'tezos';
+      $this->icon = '';
+      $this->has_fields = false;
+      $this->method_title = 'Tezos';
+      $this->method_description = 'Accept Tezos payments using the Temple wallet.';
+      
+      $this->init_form_fields();
+      $this->init_settings();
+      
+      $this->title = $this->get_option( 'title' );
+      $this->description = $this->get_option( 'description' );
+      $this->wallet_address = $this->get_option( 'wallet_address' );
+      
+      add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+    }
+    
+    // Initialize the form fields
+    public function init_form_fields() {
+      $this->form_fields = array(
+        'enabled' => array(
+          'title' => 'Enable/Disable',
+          'type' => 'checkbox',
+          'label' => 'Enable Tezos payments',
+          'default' => 'yes'
+        ),
+        'title' => array(
+          'title' => 'Title',
+          'type' => 'text',
+          'description' => 'This controls the title which the user sees during checkout.',
+          'default' => 'Tezos',
+          'desc_tip' => true
+        ),
+        'description' => array(
+          'title' => 'Description',
+          'type' => 'textarea',
+          'description' => 'This controls the description which the user sees during checkout.',
+          'default' => 'Pay with Tezos using the Temple wallet.',
+          'desc_tip' => true
+        ),
+        'wallet_address' => array(
+          'title' => 'Wallet Address',
+          'type' => 'text',
+          'description' => 'Enter your Tezos wallet address to receive payments.',
+          'default' => '',
+          'desc_tip' => true
+        )
+      );
+    }
+    
+    //
