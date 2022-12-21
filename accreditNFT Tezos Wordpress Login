@@ -1,0 +1,67 @@
+<?php
+/*
+Plugin Name: Temple Wallet Login for Tezos
+Description: Allows users to sign in to the website using the Temple wallet for Tezos.
+Version: 1.0
+Author: [@kidmatin]
+*/
+
+function temple_wallet_login_button() {
+  // Check if the user is already logged in
+  if ( is_user_logged_in() ) {
+    return;
+  }
+  
+  // Add the login button to the login form
+  ?>
+  <button id="temple-wallet-login-button">Sign in with Temple Wallet</button>
+  <script>
+    // Add a click event listener to the login button
+    document.getElementById('temple-wallet-login-button').addEventListener('click', function() {
+      // Open the Temple wallet login popup
+      temple.openPopup();
+      
+      // Add an event listener to listen for the login success event
+      temple.on('loginSuccess', function(walletAddress) {
+        // Send the wallet address to the server to log the user in
+        fetch('/wp-json/temple-wallet/login', {
+          method: 'POST',
+          body: JSON.stringify({ walletAddress: walletAddress }),
+          headers: { 'Content-Type': 'application/json' }
+        }).then(function(response) {
+          // If the login was successful, refresh the page to log the user in
+          if (response.ok) {
+            window.location.reload();
+          }
+        });
+      });
+    });
+  </script>
+  <?php
+}
+add_action( 'login_form', 'temple_wallet_login_button' );
+
+function temple_wallet_login() {
+  // Check if the request is a POST request and if it includes a walletAddress
+  if ( $_SERVER['REQUEST_METHOD'] !== 'POST' || ! isset( $_POST['walletAddress'] ) ) {
+    wp_send_json_error();
+  }
+  
+  // Get the wallet address from the request
+  $wallet_address = sanitize_text_field( $_POST['walletAddress'] );
+  
+  // Check if a user with this wallet address already exists
+  $user = get_user_by( 'login', $wallet_address );
+  if ( ! $user ) {
+    // If the user does not exist, create a new user with this wallet address as the username
+    $user_id = wp_create_user( $wallet_address, wp_generate_password() );
+    $user = get_user_by( 'id', $user_id );
+  }
+  
+  // Log the user in
+  wp_set_current_user( $user->ID );
+  wp_set_auth_cookie( $user->ID );
+  
+  wp_send_json_success();
+}
+add_action( 'wp_ajax_nopriv_temple-wallet/login', 'temple_wallet_login' );
