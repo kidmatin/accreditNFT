@@ -3,7 +3,7 @@
 Plugin Name: Tezos NFT Page Restriction
 Description: Prevents a user from viewing a page unless they have a specific Tezos NFT in their wallet.
 Version: 1.0
-Author: [Your Name]
+Author: [@kidmatin]
 */
 
 function tezos_nft_restriction_init() {
