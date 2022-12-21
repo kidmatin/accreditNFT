@@ -1,0 +1,67 @@
+<?php
+/*
+Plugin Name: NFT Gallery for Registered Users
+Description: Stores NFTs owned by registered users based on their associated Tezos wallet address and displays them in a gallery on the user's profile page.
+Version: 1.0
+Author: [@kidmatin]
+*/
+
+function nft_profile_page() {
+  // Check if the user is logged in
+  if ( ! is_user_logged_in() ) {
+    return;
+  }
+  
+  // Get the current user's wallet address
+  $wallet_address = get_user_meta( get_current_user_id(), 'wallet_address', true );
+  if ( ! $wallet_address ) {
+    return 'Please set your wallet address in your profile to view your NFTs.';
+  }
+  
+  // Add the NFT gallery to the user's profile page
+  ob_start();
+  ?>
+  <h2>NFT Gallery</h2>
+  <div id="nft-gallery">
+    <button id="refresh-nfts-button">Refresh NFTs</button>
+    <div id="nft-images"></div>
+  </div>
+  <script>
+    // Add a click event listener to the refresh button
+    document.getElementById('refresh-nfts-button').addEventListener('click', function() {
+      // Request permission to access the user's NFTs
+      temple.requestPermission('nfts').then(function(granted) {
+        if (granted) {
+          // If permission is granted, get the user's NFTs
+          temple.get('nfts').then(function(nfts) {
+            // Clear the current NFT images
+            document.getElementById('nft-images').innerHTML = '';
+            
+            // Add the NFT images to the page
+            nfts.forEach(function(nft) {
+              var img = document.createElement('img');
+              img.src = nft.image_url;
+              document.getElementById('nft-images').appendChild(img);
+            });
+          });
+        } else {
+          alert('Permission to access NFTs was denied.');
+        }
+      });
+    });
+  </script>
+  <?php
+  return ob_get_clean();
+}
+add_shortcode( 'nft_gallery', 'nft_profile_page' );
+
+function nft_profile_field( $user ) {
+  // Add a field to the user's profile to enter their wallet address
+  ?>
+  <h3>Wallet Address</h3>
+  <table class="form-table">
+    <tr>
+      <th><label for="wallet_address">Tezos Wallet Address</label></th>
+      <td>
+        <input type="text" name="wallet_address" id="wallet_address" value="<?php echo esc_attr( get_the_author_meta( 'wallet_address', $user->ID ) ); ?>" class="regular-text" />
+        <p class="description">Enter your Tezos wallet address to associate your NFTs with your account.</p
