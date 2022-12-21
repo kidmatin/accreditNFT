@@ -3,7 +3,7 @@
 Plugin Name: Tezos NFT Gallery
 Description: Displays NFTs owned by the user using the Temple wallet.
 Version: 1.0
-Author: [@kidmatin]
+Author: [kidmatin]
 */
 
 function nft_gallery_shortcode( $atts ) {
