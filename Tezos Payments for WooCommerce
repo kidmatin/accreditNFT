@@ -3,7 +3,7 @@
 Plugin Name: Tezos Payments for WooCommerce
 Description: Allows Tezos payments to be made using WooCommerce.
 Version: 1.0
-Author: [Your Name]
+Author: [@kidmatin]
 */
 
 function tezos_gateway_init() {
