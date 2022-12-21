@@ -1,0 +1,41 @@
+<?php
+/*
+Plugin Name: Tezos NFT Page Restriction
+Description: Prevents a user from viewing a page unless they have a specific Tezos NFT in their wallet.
+Version: 1.0
+Author: [Your Name]
+*/
+
+function tezos_nft_restriction_init() {
+  // Check if Temple Wallet is active
+  if ( ! function_exists( 'temple_wallet_init' ) ) {
+    return;
+  }
+  
+  // Add the shortcode to restrict page access
+  add_shortcode( 'tezos_nft_restriction', 'tezos_nft_restriction_shortcode' );
+}
+add_action( 'init', 'tezos_nft_restriction_init' );
+
+function tezos_nft_restriction_shortcode( $atts ) {
+  // Extract the shortcode attributes
+  extract( shortcode_atts( array(
+    'nft_id' => '', // Required attribute
+    'message' => 'You do not have the required NFT to view this page.' // Optional attribute
+  ), $atts ) );
+  
+  // Check if the NFT ID is provided
+  if ( empty( $nft_id ) ) {
+    return;
+  }
+  
+  // Check if the user has the required NFT
+  $has_nft = temple_wallet_has_nft( $nft_id );
+  
+  // If the user does not have the required NFT, display the message
+  if ( ! $has_nft ) {
+    return $message;
+  }
+  
+  // If the user has the required NFT, do nothing
+}
