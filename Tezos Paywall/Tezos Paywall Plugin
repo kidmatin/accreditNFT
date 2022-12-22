@@ -1,0 +1,42 @@
+<?php
+/*
+Plugin Name: Tezos Paywall
+Description: Requires a user to pay 1 Tezos in order to view a page.
+Version: 1.0
+Author: [@kidmatin]
+*/
+
+function tezos_paywall_init() {
+  // Check if Temple Wallet is active
+  if ( ! function_exists( 'temple_wallet_init' ) ) {
+    return;
+  }
+  
+  // Add the shortcode to restrict page access
+  add_shortcode( 'tezos_paywall', 'tezos_paywall_shortcode' );
+}
+add_action( 'init', 'tezos_paywall_init' );
+
+function tezos_paywall_shortcode( $atts ) {
+  // Extract the shortcode attributes
+  extract( shortcode_atts( array(
+    'wallet_address' => '', // Required attribute
+    'amount' => '1', // Optional attribute
+    'message' => 'You must pay 1 Tezos to view this page.' // Optional attribute
+  ), $atts ) );
+  
+  // Check if the wallet address is provided
+  if ( empty( $wallet_address ) ) {
+    return;
+  }
+  
+  // Check if the user has paid the required amount
+  $paid = temple_wallet_payment_received( $wallet_address, $amount );
+  
+  // If the user has not paid, display the message and the payment button
+  if ( ! $paid ) {
+    return $message . ' <br>' . temple_wallet_payment_button( $wallet_address, $amount );
+  }
+  
+  // If the user has paid, do nothing
+}
